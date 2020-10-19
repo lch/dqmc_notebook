@@ -6,14 +6,10 @@ mutable struct SVD_Store
 	U::Matrix{Mat_Type}
 	D::Matrix{Mat_Type}
 	V::Matrix{Mat_Type}
-	# function SVD_Store(dim::Int)
-	# 	U = zeros(Mat_Type, dim, dim)
-	# 	D = zeros(Mat_Type, dim, dim)
-	# 	V = zeros(Mat_Type, dim, dim)
-	# 	new(U, D, V)
-	# end
 end
 
+# This is a naive QR method, and it might behave bad in large U. 
+# But it should satisfy most case when considering efficiency.
 function qr_svd(A::Matrix{Mat_Type})
 	U, R = LinearAlgebra.qr(A)
 	D = LinearAlgebra.Diagonal(R)

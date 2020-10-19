@@ -5,28 +5,28 @@ using ..SVDM: SVD_Store, svd_wrap
 using ..Hubbard_Model: expV, Param, Square_Lattice
 using ..Obser: sampling
 
-function B_up(auxF::Vector{Int}, exp_mT::Matrix{Float64})
-	expV(1, auxF) * exp_mT
+function B_up(auxF::Vector{Int}, exp_T::Matrix{Float64})
+	expV(1, auxF) * exp_T
 end
 
-function B_dn(auxF::Vector{Int}, exp_mT::Matrix{Float64})
-	expV(-1, auxF) * exp_mT
+function B_dn(auxF::Vector{Int}, exp_T::Matrix{Float64})
+	expV(-1, auxF) * exp_T
 end
 
-function B_up_inv(auxF::Vector{Int}, exp_T::Matrix{Float64})
-	exp_T * expV(-1, auxF)
+function B_up_inv(auxF::Vector{Int}, exp_mT::Matrix{Float64})
+	exp_mT * expV(-1, auxF)
 end
 
-function B_dn_inv(auxF::Vector{Int}, exp_T::Matrix{Float64})
-	exp_T * expV(1, auxF)
+function B_dn_inv(auxF::Vector{Int}, exp_mT::Matrix{Float64})
+	exp_mT * expV(1, auxF)
 end
 
-function init_B_mat_list(auxf::Matrix{Int}, exp_mT::Matrix{Float64}, MatDim::Int, N_time_slice::Int)
+function init_B_mat_list(auxf::Matrix{Int}, exp_T::Matrix{Float64}, MatDim::Int, N_time_slice::Int)
 	B_up_list = Array{Float64, 3}(undef, MatDim, MatDim, N_time_slice)
 	B_dn_list = Array{Float64, 3}(undef, MatDim, MatDim, N_time_slice)
 	for i=1:N_time_slice
-		B_up_list[:,:,i] = B_up(auxf[:,i], exp_mT)
-		B_dn_list[:,:,i] = B_dn(auxf[:,i], exp_mT)
+		B_up_list[:,:,i] = B_up(auxf[:,i], exp_T)
+		B_dn_list[:,:,i] = B_dn(auxf[:,i], exp_T)
 	end
 	return B_up_list, B_dn_list
 end
@@ -79,8 +79,8 @@ function sweep!(G_up::Matrix{Float64}, G_dn::Matrix{Float64},
 			B_β_τ_up = B_β_τ(time_index, B_up_l, MatDim, N_time_slice)
 			B_β_τ_dn = B_β_τ(time_index, B_dn_l, MatDim, N_time_slice)
 
-			# G_up_tmp = B_up_l[:,:,time_index] * G_up * B_up_inv(sl.aux_field[:, time_index], sl.exp_T)
-			# G_dn_tmp = B_dn_l[:,:,time_index] * G_dn * B_dn_inv(sl.aux_field[:, time_index], sl.exp_T)
+			# G_up_tmp = B_up_l[:,:,time_index] * G_up * B_up_inv(sl.aux_field[:, time_index], sl.exp_mT)
+			# G_dn_tmp = B_dn_l[:,:,time_index] * G_dn * B_dn_inv(sl.aux_field[:, time_index], sl.exp_mT)
 
 			G_up[:,:] = G_σ_τ_τ_calc(B_τ_0_up, B_β_τ_up, MatDim)
 			G_dn[:,:] = G_σ_τ_τ_calc(B_τ_0_dn, B_β_τ_dn, MatDim)
@@ -90,8 +90,8 @@ function sweep!(G_up::Matrix{Float64}, G_dn::Matrix{Float64},
 
 			# println("↑ ", G_up_err_max, " ",G_dn_err_max)
 		else
-			G_up[:,:] = B_up_l[:,:,time_index] * G_up * B_up_inv(sl.aux_field[:, time_index], sl.exp_T)
-			G_dn[:,:] = B_dn_l[:,:,time_index] * G_dn * B_dn_inv(sl.aux_field[:, time_index], sl.exp_T)
+			G_up[:,:] = B_up_l[:,:,time_index] * G_up * B_up_inv(sl.aux_field[:, time_index], sl.exp_mT)
+			G_dn[:,:] = B_dn_l[:,:,time_index] * G_dn * B_dn_inv(sl.aux_field[:, time_index], sl.exp_mT)
 		end
 
 		update!(time_index, G_up, G_dn, B_up_l, B_dn_l, sl, MatDim)
@@ -113,8 +113,8 @@ function sweep!(G_up::Matrix{Float64}, G_dn::Matrix{Float64},
 			G_up[:,:] = G_σ_τ_τ_calc(B_τ_0_up, B_β_τ_up, MatDim)
 			G_dn[:,:] = G_σ_τ_τ_calc(B_τ_0_dn, B_β_τ_dn, MatDim)
 		else
-			G_up[:,:] = B_up_inv(sl.aux_field[:,last_time_index], sl.exp_T) * G_up * B_up_l[:,:,last_time_index]
-			G_dn[:,:] = B_dn_inv(sl.aux_field[:,last_time_index], sl.exp_T) * G_dn * B_dn_l[:,:,last_time_index]
+			G_up[:,:] = B_up_inv(sl.aux_field[:,last_time_index], sl.exp_mT) * G_up * B_up_l[:,:,last_time_index]
+			G_dn[:,:] = B_dn_inv(sl.aux_field[:,last_time_index], sl.exp_mT) * G_dn * B_dn_l[:,:,last_time_index]
 		end
 
 		update!(time_index, G_up, G_dn, B_up_l, B_dn_l, sl, MatDim)
@@ -151,8 +151,8 @@ function update!(time_index::Int, G_up::Matrix{Float64}, G_dn::Matrix{Float64},
 			sl.aux_field[i,time_index] = -sl.aux_field[i,time_index]
 		end
 	end
-	B_up_l[:,:,time_index] = B_up(sl.aux_field[:,time_index], sl.exp_mT)
-	B_dn_l[:,:,time_index] = B_dn(sl.aux_field[:,time_index], sl.exp_mT)
+	B_up_l[:,:,time_index] = B_up(sl.aux_field[:,time_index], sl.exp_T)
+	B_dn_l[:,:,time_index] = B_dn(sl.aux_field[:,time_index], sl.exp_T)
 end
 
 function G_σ_τ_τ_calc(R::SVD_Store, L::SVD_Store, N_dim::Int)

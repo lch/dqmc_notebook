@@ -29,7 +29,7 @@ function kinetic(gttupc::Matrix{Float64},gttdnc::Matrix{Float64}, nlist::Vector{
 		k += gttupc[i,right] + gttupc[right,i]
 		k += gttdnc[i,right] + gttdnc[right,i]
 	end
-	Param.t * k / Param.MatDim
+	-Param.t * k / (2 * Param.MatDim)
 end
 
 function dbl_occu(gttupc::Matrix{Float64}, gttdnc::Matrix{Float64})

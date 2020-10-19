@@ -17,7 +17,7 @@ function main()
 
 	sl = Hubbard_Model.Square_Lattice(aux_field, nlist, T, exp_T, exp_mT)
 
-	B_up_l, B_dn_l = CoreM.init_B_mat_list(sl.aux_field, sl.exp_mT, p.MatDim, p.N_time_slice)
+	B_up_l, B_dn_l = CoreM.init_B_mat_list(sl.aux_field, sl.exp_T, p.MatDim, p.N_time_slice)
 
 	B_τ_0_up = CoreM.B_τ_0(p.N_time_slice, B_up_l, p.MatDim)
 	B_τ_0_dn = CoreM.B_τ_0(p.N_time_slice, B_dn_l, p.MatDim)
