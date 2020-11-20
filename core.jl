@@ -22,9 +22,9 @@ function B_dn_inv(auxF::Vector{Int}, exp_mT::Matrix{Float64})
 end
 
 function init_B_mat_list(auxf::Matrix{Int}, exp_T::Matrix{Float64}, MatDim::Int, N_time_slice::Int)
-	B_up_list = Array{Float64, 3}(undef, MatDim, MatDim, N_time_slice)
-	B_dn_list = Array{Float64, 3}(undef, MatDim, MatDim, N_time_slice)
-	for i=1:N_time_slice
+	B_up_list = Array{Float64,3}(undef, MatDim, MatDim, N_time_slice)
+	B_dn_list = Array{Float64,3}(undef, MatDim, MatDim, N_time_slice)
+	for i = 1:N_time_slice
 		B_up_list[:,:,i] = B_up(auxf[:,i], exp_T)
 		B_dn_list[:,:,i] = B_dn(auxf[:,i], exp_T)
 	end
@@ -36,7 +36,7 @@ function B_τ_0(time_index::Int, B_list::Array{Float64,3}, MatDim::Int)::SVD_Sto
 	Utmp = Matrix(LinearAlgebra.I, MatDim, MatDim)
 	Dtmp = Matrix(LinearAlgebra.I, MatDim, MatDim)
 	Vtmp = Matrix(LinearAlgebra.I, MatDim, MatDim)
-	for i=1:time_index
+	for i = 1:time_index
 		Btmp = B_list[:,:,i] * Utmp * Dtmp
 		Budv = svd_wrap(Btmp)
 		Utmp = Budv.U
@@ -51,7 +51,7 @@ function B_β_τ(time_index::Int, B_list::Array{Float64,3}, MatDim::Int, N_time_
 	Utmp = Matrix(LinearAlgebra.I, MatDim, MatDim)
 	Dtmp = Matrix(LinearAlgebra.I, MatDim, MatDim)
 	Vtmp = Matrix(LinearAlgebra.I, MatDim, MatDim)
-	for i=N_time_slice:(-1):(time_index+1)
+	for i = N_time_slice:(-1):(time_index + 1)
 		Btmp = Dtmp * Vtmp * B_list[:,:,i]
 		Budv = svd_wrap(Btmp)
 		Utmp = Utmp * Budv.U
@@ -96,12 +96,12 @@ function sweep!(G_up::Matrix{Float64}, G_dn::Matrix{Float64},
 
 		update!(time_index, G_up, G_dn, B_up_l, B_dn_l, sl, MatDim)
 
-		if obser_switch && time_index ==measure_time_index
+		if obser_switch && time_index == measure_time_index
 			sampling(G_up, G_dn, sl)
 		end
 	end
 
-	for time_index = N_time_slice-1:-1:1
+	for time_index = (N_time_slice - 1):-1:1
 		last_time_index = time_index + 1
 		if time_index % N_ns_int == 0
 			B_τ_0_up = B_τ_0(time_index, B_up_l, MatDim)
@@ -123,7 +123,7 @@ end
 
 function update!(time_index::Int, G_up::Matrix{Float64}, G_dn::Matrix{Float64}, 
 	B_up_l::Array{Float64,3}, B_dn_l::Array{Float64,3}, sl::Square_Lattice, MatDim::Int)
-	for i=1:MatDim
+	for i = 1:MatDim
 		if sl.aux_field[i, time_index] == 1
 			delta_V_up = Param.exp_mα / Param.exp_α - 1
 			delta_V_dn = Param.exp_α / Param.exp_mα - 1
@@ -132,8 +132,8 @@ function update!(time_index::Int, G_up::Matrix{Float64}, G_dn::Matrix{Float64},
 			delta_V_dn = Param.exp_mα / Param.exp_α - 1
 		end
 
-		R_up = 1 + delta_V_up*(1-G_up[i,i])
-		R_dn = 1 + delta_V_dn*(1-G_dn[i,i])
+		R_up = 1 + delta_V_up * (1 - G_up[i,i])
+		R_dn = 1 + delta_V_dn * (1 - G_dn[i,i])
 
 		R = R_up * R_dn
 		@assert R > 0 "R should larger than zero"
