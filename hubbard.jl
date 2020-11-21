@@ -7,6 +7,8 @@ using InteractiveUtils
 # ╔═╡ 0a5c6200-0d0b-11eb-15f7-2f2818b0e133
 module Hubbard_Model
 
+const Mat_Type = Float64
+
 import LinearAlgebra.Diagonal
 
 module Param
@@ -74,7 +76,7 @@ mutable struct Neighbor
 		if left_x < 1
 			left_x = Lx
 		end
-		left = linear_index(left_x, iy , Lx)
+		left = linear_index(left_x, iy, Lx)
 		right_x = ix + 1
 		if right_x > Lx
 			right_x = 1
@@ -111,7 +113,7 @@ end
 
 function gen_nlist()
 	nlist = Vector{Neighbor}(undef, Param.N_pc)
-	for i=1:Param.N_pc
+	for i = 1:Param.N_pc
 		nlist[i] = Neighbor(i, Param.Lx, Param.Ly)
 		# println("$i ", nlist[i])
 	end
@@ -119,12 +121,12 @@ function gen_nlist()
 end
 
 function gen_auxf()
-	rand([-1,1],Param.MatDim,Param.N_time_slice)
+	rand([-1,1], Param.MatDim, Param.N_time_slice)
 end
 
 function T(nlist::Vector{Neighbor})
 	T_mat = zeros(Float64, Param.MatDim, Param.MatDim)
-	for i=1:Param.N_pc
+	for i = 1:Param.N_pc
 		down = nlist[i].down
 		right = nlist[i].right
 		T_mat[i, down] = Param.t
@@ -136,15 +138,21 @@ function T(nlist::Vector{Neighbor})
 end
 
 function expV(sigma::Int, auxF::Vector{Int})
-	expV_mat = zeros(Float64, Param.MatDim, Param.MatDim)
-	for i=1:Param.MatDim
-		if auxF[i] == 1 * sigma
-			expV_mat[i,i] = Param.exp_α
-		else
-			expV_mat[i,i] = Param.exp_mα
-		end
-	end
-	expV_mat
+	expV_vec = map(spin -> spin == 1 * sigma ? Param.exp_α : Param.exp_mα, auxF)
+	# expV_mat = zeros(Float64, Param.MatDim, Param.MatDim)
+	# for i = 1:Param.MatDim
+	# 	if auxF[i] == 1 * sigma
+	# 		expV_mat[i,i] = Param.exp_α
+	# 	else
+	# 		expV_mat[i,i] = Param.exp_mα
+	# 	end
+	# end
+	# expV_mat
+	Diagonal(expV_vec)
+end
+
+function expV!(sigma::Int, auxF::AbstractVector{Int}, expV_vec::Vector{Mat_Type})
+	map!(spin -> spin == 1 * sigma ? Param.exp_α : Param.exp_mα, expV_vec, auxF)
 end
 
 end
