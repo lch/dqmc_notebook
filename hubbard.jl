@@ -139,15 +139,6 @@ end
 
 function expV(sigma::Int, auxF::Vector{Int})
 	expV_vec = map(spin -> spin == 1 * sigma ? Param.exp_α : Param.exp_mα, auxF)
-	# expV_mat = zeros(Float64, Param.MatDim, Param.MatDim)
-	# for i = 1:Param.MatDim
-	# 	if auxF[i] == 1 * sigma
-	# 		expV_mat[i,i] = Param.exp_α
-	# 	else
-	# 		expV_mat[i,i] = Param.exp_mα
-	# 	end
-	# end
-	# expV_mat
 	Diagonal(expV_vec)
 end
 

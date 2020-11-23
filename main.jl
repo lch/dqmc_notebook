@@ -12,7 +12,7 @@ function main()
 	nlist = Hubbard_Model.gen_nlist()
 	T = Hubbard_Model.T(nlist)
 
-	# This could be slow, since no checkerboard decomposition.
+	# The following two lines could be slow when size is large, since we haven't implement checkerboard decomposition.
 	exp_T = exp(p.Δτ * T)
 	exp_mT = exp(-p.Δτ * T)
 
@@ -32,12 +32,6 @@ function main()
 	CoreM.fill_b_udv_store!(B_up_l, pst_data.B_β_τ_up_udv, p.N_ns_int, p.N_ns, tmp_data.mat, tmp_data.udv, Val(:β_τ))
 	CoreM.fill_b_udv_store!(B_dn_l, pst_data.B_β_τ_dn_udv, p.N_ns_int, p.N_ns, tmp_data.mat, tmp_data.udv, Val(:β_τ))
 
-	# B_τ_0_up = CoreM.B_τ_0(p.N_time_slice, B_up_l, p.MatDim)
-	# B_τ_0_dn = CoreM.B_τ_0(p.N_time_slice, B_dn_l, p.MatDim)
-
-	# B_β_τ_up = CoreM.B_β_τ(0, B_up_l, p.MatDim, p.N_time_slice)
-	# B_β_τ_dn = CoreM.B_β_τ(0, B_dn_l, p.MatDim, p.N_time_slice)
-
 	G_up = CoreM.G_σ_τ_τ_calc(pst_data.B_τ_0_up_udv[1], pst_data.B_β_τ_up_udv[1], p.MatDim)
 	G_dn = CoreM.G_σ_τ_τ_calc(pst_data.B_τ_0_dn_udv[1], pst_data.B_β_τ_dn_udv[1], p.MatDim)
 
@@ -51,7 +45,7 @@ function main()
 	println()
 	for i = 1:p.N_bin
 		println("bin=", i)
-		for j = 1:p.N_sweep
+		@time for j = 1:p.N_sweep
 			print(j, "...")
 			CoreM.sweep!(G_up, G_dn, B_up_l, B_dn_l, tmp_data, pst_data, sl, 
 				p.MatDim, p.N_ns_int, p.N_time_slice, p.N_ns, true)
